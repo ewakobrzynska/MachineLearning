@@ -11,7 +11,7 @@
 
 :x: 5.0 wymaganie 5 Modify the output image with borders between clusters
 
-[Notatnik:](https://github.com/ewakobrzynska/MachineLearning/blob/main/047Clustering_Exercises_checkpoint.ipynb)
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/047Clustering_Exercises_checkpoint.ipynb)
 
 
 **Zadanie 2** 
