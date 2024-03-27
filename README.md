@@ -3,7 +3,7 @@
 
 :white_check_mark: 3.0 Modify the HCM code to work for three groups
 
-:x: 3.5 wymaganie 2 Plot the density clusters
+:white_check_mark: 3.5 Plot the density clusters
 
 :x: 4.0 wymaganie 3 Build a dendrogram using dendrograms_history and pydot (done)
 
