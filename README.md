@@ -16,6 +16,14 @@
 
 **Zadanie 2** 
 
+:white_check_mark: 3.0 Cross-validation linear regression
+
+:x: 4.0 Implement based on the Ridge regression example, the Lasso regression.
+
+:x: 5.0 Extend the Fisher's classifier
+
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/047Clustering_Exercises_checkpoint.ipynb)
+
 
 
 
