@@ -18,7 +18,7 @@
 
 :white_check_mark: 3.0 Cross-validation linear regression
 
-:x: 4.0 Implement based on the Ridge regression example, the Lasso regression.
+:white_check_mark: 4.0 Implement based on the Ridge regression example, the Lasso regression.
 
 :x: 5.0 Extend the Fisher's classifier
 
