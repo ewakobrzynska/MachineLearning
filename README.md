@@ -22,7 +22,7 @@
 
 :x: 5.0 Extend the Fisher's classifier
 
-[Notatnik] (https://github.com/ewakobrzynska/MachineLearning/blob/main/025_Exercises.ipynb)
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/025_Exercises.ipynb)
 
 
 
