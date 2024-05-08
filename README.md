@@ -39,6 +39,11 @@
 [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/055Decision_trees_Exercises.ipynb)
 
 
+**Zadanie 4** 
 
+:white_check_mark: 1. Find the best three classifier in the stacking method
 
+:white_check_mark: 2. Boosting with Decision Tree Classifier
+
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/075Ensemble_Exercises.ipynb)
 
