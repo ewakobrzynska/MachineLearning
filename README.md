@@ -56,3 +56,18 @@
 
 [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/065_SVM_Exercises.ipynb)
 
+
+**Zadanie 6** 
+
+:white_check_mark: 1. Build your own tokenizer
+
+:white_check_mark: 2. Get tags from Trump speech using NLTK
+
+:white_check_mark: 3. Get the nouns in the last 10 sentences from Trump's speech and find the nouns divided by sentencens
+
+:white_check_mark: 4. Build your own Bag Of Words implementation using tokenizer created before
+
+:white_check_mark: 5. Build a 5-gram model and clean up the results
+
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/106_NLP_Exercises.ipynb)
+
