@@ -47,3 +47,12 @@
 
 [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/075Ensemble_Exercises.ipynb)
 
+
+**Zadanie 5** 
+
+:white_check_mark: 1. Polynomial kernel
+
+:white_check_mark: 2. Multiclass C-SVM
+
+[Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/065_SVM_Exercises.ipynb)
+
