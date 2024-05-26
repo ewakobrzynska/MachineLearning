@@ -71,3 +71,15 @@
 
 [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/106_NLP_Exercises.ipynb)
 
+
+**Banknotes** 
+
+:white_check_mark: 1. Banknotes_gmda [Notantik](https://github.com/ewakobrzynska/MachineLearning/blob/main/Banknotes/banknotes_gmda.ipynb)
+
+:white_check_mark: 2. Banknotes_NB [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/Banknotes/banknotes_NB.ipynb)
+
+:white_check_mark: 3. Banknotes_NN [Notatnik](https://github.com/ewakobrzynska/MachineLearning/blob/main/Banknotes/banknotes_NN.ipynb)
+
+
+
+
