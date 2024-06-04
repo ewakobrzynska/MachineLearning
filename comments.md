@@ -41,3 +41,9 @@ But see previous assignment.
 4.06.2024 13:25:00
 The cost does not take into acount the probability of the counterfeit banknote. 
 
+# Banknote NN
+
+4.06.2024 15:34:49
+You should at least try some more complicated network.
+Try also to better train the model. You can get better accuracy.
+
