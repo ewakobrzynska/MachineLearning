@@ -191,15 +191,38 @@ test_conf_matrix = confusion_matrix(lbls_test, test_preds, normalize='true')
 test_roc_auc = roc_auc_score(lbls_test, test_probs)
 test_fpr, test_tpr, _ = roc_curve(lbls_test, test_probs)
 
-print("Training set confusion matrix:\n", train_conf_matrix)
-print("Training set ROC AUC score:", train_roc_auc)
-print("Test set confusion matrix:\n", test_conf_matrix)
-print("Test set ROC AUC score:", test_roc_auc)
+# Initialize and train the Gaussian Naive Bayes classifier using one feature
+gnb_one_feature = GaussianNB()
+gnb_one_feature.fit(features_train[:, :1], lbls_train)
+train_probs_one_feature = gnb_one_feature.predict_proba(features_train[:, :1])[:, 1]
+test_probs_one_feature = gnb_one_feature.predict_proba(features_test[:, :1])[:, 1]
+train_roc_auc_one_feature = roc_auc_score(lbls_train, train_probs_one_feature)
+test_roc_auc_one_feature = roc_auc_score(lbls_test, test_probs_one_feature)
+train_fpr_one_feature, train_tpr_one_feature, _ = roc_curve(lbls_train, train_probs_one_feature)
+test_fpr_one_feature, test_tpr_one_feature, _ = roc_curve(lbls_test, test_probs_one_feature)
 
-# Plot ROC curve
+# Initialize and train the Gaussian Naive Bayes classifier using two features
+gnb_two_features = GaussianNB()
+gnb_two_features.fit(features_train, lbls_train)
+train_probs_two_features = gnb_two_features.predict_proba(features_train)[:, 1]
+test_probs_two_features = gnb_two_features.predict_proba(features_test)[:, 1]
+train_roc_auc_two_features = roc_auc_score(lbls_train, train_probs_two_features)
+test_roc_auc_two_features = roc_auc_score(lbls_test, test_probs_two_features)
+train_fpr_two_features, train_tpr_two_features, _ = roc_curve(lbls_train, train_probs_two_features)
+test_fpr_two_features, test_tpr_two_features, _ = roc_curve(lbls_test, test_probs_two_features)
+
+# Print ROC AUC scores
+print("ROC AUC score with one feature - Training set:", train_roc_auc_one_feature)
+print("ROC AUC score with one feature - Test set:", test_roc_auc_one_feature)
+print("ROC AUC score with two features - Training set:", train_roc_auc_two_features)
+print("ROC AUC score with two features - Test set:", test_roc_auc_two_features)
+
+# Plot ROC curves
 plt.figure(figsize=(8, 8))
-plt.plot(train_fpr, train_tpr, label=f'Training set (AUC = {train_roc_auc:.2f})')
-plt.plot(test_fpr, test_tpr, label=f'Test set (AUC = {test_roc_auc:.2f})')
+plt.plot(train_fpr_one_feature, train_tpr_one_feature, label=f'Training set - One feature (AUC = {train_roc_auc_one_feature:.2f})')
+plt.plot(test_fpr_one_feature, test_tpr_one_feature, label=f'Test set - One feature (AUC = {test_roc_auc_one_feature:.2f})')
+plt.plot(train_fpr_two_features, train_tpr_two_features, label=f'Training set - Two features (AUC = {train_roc_auc_two_features:.2f})')
+plt.plot(test_fpr_two_features, test_tpr_two_features, label=f'Test set - Two features (AUC = {test_roc_auc_two_features:.2f})')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
@@ -260,9 +283,4 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
 plt.legend()
 plt.show()
-
-```
-
-```{python}
-
 ```
