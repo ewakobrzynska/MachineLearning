@@ -23,6 +23,23 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as st
+
+from sklearn.model_selection import train_test_split
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
+
+from sklearn.mixture import GaussianMixture
+
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import f1_score
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import roc_curve, auc
+
+
 ```
 
 ```{python}
@@ -43,13 +60,6 @@ data.head()
 Perform the Quadratic Discriminant Analysis on this set. Calculate the confusion matrix, AUC score and plot the ROC curve. 
 
 ```{python}
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
-
 # Load the data
 data = pd.read_csv('data/banknote_authentication.csv')
 
@@ -102,11 +112,16 @@ plt.show()
 Perform Gaussian Mixture Discriminant Analysis on this set as described in the `gaussian_mixture_model_EM_algorithm` notebook. Use two components for positives and two components for negatives. Calculate the confusion matrix, AUC score and plot the ROC curve. 
 
 ```{python}
-from sklearn.mixture import GaussianMixture
+# Calculate class priors
+class_counts = y.value_counts()
+class_priors = class_counts / len(y)
 
-# Initialize Gaussian Mixture Models
-gmm_pos = GaussianMixture(n_components=2, random_state=42)
-gmm_neg = GaussianMixture(n_components=2, random_state=42)
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Initialize Gaussian Mixture Models with class priors
+gmm_pos = GaussianMixture(n_components=2, random_state=42, weights_init=[class_priors[1], 1 - class_priors[1]])
+gmm_neg = GaussianMixture(n_components=2, random_state=42, weights_init=[class_priors[0], 1 - class_priors[0]])
 
 # Fit the models
 gmm_pos.fit(X_train[y_train == 1])
@@ -123,7 +138,7 @@ y_test_gmm_prob = np.exp(log_likelihood_pos) / (np.exp(log_likelihood_pos) + np.
 # Calculate metrics
 test_gmm_conf_matrix = confusion_matrix(y_test, y_test_gmm_pred, normalize='true')
 test_gmm_roc_auc = roc_auc_score(y_test, y_test_gmm_prob)
-test_gmm_fpr, test_gmm_tpr, _ = roc_curve(y_test, y_test_gmm_prob)
+test_fpr_gmm, test_tpr_gmm, _ = roc_curve(y_test, y_test_gmm_prob)
 
 # Print metrics
 print("Test set confusion matrix (GMM):\n", test_gmm_conf_matrix)
@@ -132,83 +147,12 @@ print("Test set ROC AUC score (GMM):", test_gmm_roc_auc)
 # Plot ROC curve
 plt.figure(figsize=(8, 8))
 plt.plot(test_fpr, test_tpr, label=f'QDA (AUC = {test_roc_auc:.2f})')
-plt.plot(test_gmm_fpr, test_gmm_tpr, label=f'GMM (AUC = {test_gmm_roc_auc:.2f})')
+plt.plot(test_fpr_gmm, test_tpr_gmm, label=f'GMM (AUC = {test_gmm_roc_auc:.2f})')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
+plt.title('ROC Curve for GMM')
 plt.legend()
 plt.show()
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score
-
-# Parameters
-max_components = 12
-k_folds = 5
-best_f1_score = 0
-best_n_components = (1, 1)  # Initialize with minimal number of components
-
-# Stratified K-Fold Cross Validation
-skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=42)
-
-for n_pos in range(1, max_components + 1):
-    for n_neg in range(1, max_components + 1):
-        f1_scores = []
-        
-        for train_idx, val_idx in skf.split(X, y):
-            X_train_cv, X_val_cv = X.iloc[train_idx], X.iloc[val_idx]
-            y_train_cv, y_val_cv = y.iloc[train_idx], y.iloc[val_idx]
-            
-            gmm_pos_cv = GaussianMixture(n_components=n_pos, random_state=42)
-            gmm_neg_cv = GaussianMixture(n_components=n_neg, random_state=42)
-            
-            gmm_pos_cv.fit(X_train_cv[y_train_cv == 1])
-            gmm_neg_cv.fit(X_train_cv[y_train_cv == 0])
-            
-            log_likelihood_pos_cv = gmm_pos_cv.score_samples(X_val_cv)
-            log_likelihood_neg_cv = gmm_neg_cv.score_samples(X_val_cv)
-            
-            y_val_gmm_pred_cv = (log_likelihood_pos_cv > log_likelihood_neg_cv).astype(int)
-            f1_scores.append(f1_score(y_val_cv, y_val_gmm_pred_cv))
-        
-        avg_f1_score = np.mean(f1_scores)
-        
-        if avg_f1_score > best_f1_score:
-            best_f1_score = avg_f1_score
-            best_n_components = (n_pos, n_neg)
-
-# Train the best model on the entire training set
-best_gmm_pos = GaussianMixture(n_components=best_n_components[0], random_state=42)
-best_gmm_neg = GaussianMixture(n_components=best_n_components[1], random_state=42)
-best_gmm_pos.fit(X_train[y_train == 1])
-best_gmm_neg.fit(X_train[y_train == 0])
-
-log_likelihood_pos_best = best_gmm_pos.score_samples(X_test)
-log_likelihood_neg_best = best_gmm_neg.score_samples(X_test)
-
-y_test_gmm_best_pred = (log_likelihood_pos_best > log_likelihood_neg_best).astype(int)
-y_test_gmm_best_prob = np.exp(log_likelihood_pos_best) / (np.exp(log_likelihood_pos_best) + np.exp(log_likelihood_neg_best))
-
-# Calculate metrics
-test_gmm_best_conf_matrix = confusion_matrix(y_test, y_test_gmm_best_pred, normalize='true')
-test_gmm_best_roc_auc = roc_auc_score(y_test, y_test_gmm_best_prob)
-test_gmm_best_fpr, test_gmm_best_tpr, _ = roc_curve(y_test, y_test_gmm_best_prob)
-
-# Print metrics
-print("Best GMM Components:", best_n_components)
-print("Test set confusion matrix (Best GMM):\n", test_gmm_best_conf_matrix)
-print("Test set ROC AUC score (Best GMM):", test_gmm_best_roc_auc)
-
-# Plot ROC curve
-plt.figure(figsize=(8, 8))
-plt.plot(test_fpr, test_tpr, label=f'QDA (AUC = {test_roc_auc:.2f})')
-plt.plot(test_gmm_fpr, test_gmm_tpr, label=f'GMM (AUC = {test_gmm_roc_auc:.2f})')
-plt.plot(test_gmm_best_fpr, test_gmm_best_tpr, label=f'Best GMM (AUC = {test_gmm_best_roc_auc:.2f})')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend()
-plt.show()
-
 ```
 
 ### C.
@@ -222,14 +166,15 @@ __Hint__ use the `StratifiedKFold` function from scikit-learn library to generat
 <!-- #endregion -->
 
 ```{python}
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score
-
 # Parameters
 max_components = 12
 k_folds = 5
 best_f1_score = 0
 best_n_components = (1, 1)  # Initialize with minimal number of components
+
+# Calculate class priors
+class_counts = y.value_counts()
+class_priors = class_counts / len(y)
 
 # Stratified K-Fold Cross Validation
 skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=42)
@@ -242,6 +187,7 @@ for n_pos in range(1, max_components + 1):
             X_train_cv, X_val_cv = X.iloc[train_idx], X.iloc[val_idx]
             y_train_cv, y_val_cv = y.iloc[train_idx], y.iloc[val_idx]
             
+            # Initialize Gaussian Mixture Models
             gmm_pos_cv = GaussianMixture(n_components=n_pos, random_state=42)
             gmm_neg_cv = GaussianMixture(n_components=n_neg, random_state=42)
             
@@ -263,8 +209,8 @@ for n_pos in range(1, max_components + 1):
 # Train the best model on the entire training set
 best_gmm_pos = GaussianMixture(n_components=best_n_components[0], random_state=42)
 best_gmm_neg = GaussianMixture(n_components=best_n_components[1], random_state=42)
-best_gmm_pos.fit(X_train[y_train == 1])
-best_gmm_neg.fit(X_train[y_train == 0])
+best_gmm_pos.fit(X[y == 1])
+best_gmm_neg.fit(X[y == 0])
 
 log_likelihood_pos_best = best_gmm_pos.score_samples(X_test)
 log_likelihood_neg_best = best_gmm_neg.score_samples(X_test)
@@ -276,6 +222,7 @@ y_test_gmm_best_prob = np.exp(log_likelihood_pos_best) / (np.exp(log_likelihood_
 test_gmm_best_conf_matrix = confusion_matrix(y_test, y_test_gmm_best_pred, normalize='true')
 test_gmm_best_roc_auc = roc_auc_score(y_test, y_test_gmm_best_prob)
 test_gmm_best_fpr, test_gmm_best_tpr, _ = roc_curve(y_test, y_test_gmm_best_prob)
+test_gmm_fpr, test_gmm_tpr, _ = roc_curve(y_test, y_test_gmm_prob)
 
 # Print metrics
 print("Best GMM Components:", best_n_components)
@@ -289,7 +236,7 @@ plt.plot(test_gmm_fpr, test_gmm_tpr, label=f'GMM (AUC = {test_gmm_roc_auc:.2f})'
 plt.plot(test_gmm_best_fpr, test_gmm_best_tpr, label=f'Best GMM (AUC = {test_gmm_best_roc_auc:.2f})')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
+plt.title('ROC Curve for Best GMM')
 plt.legend()
 plt.show()
 
@@ -301,51 +248,64 @@ plt.show()
 Assume that 1% of all the customers in your store try to pay with a counterfeit 100PLN bill. If you accept the counterfeit bill you loose 100PLN. If you reject a valid bill,  you may loose the purchase, you estimate this loss as 15PLN on average. For each of the three classifiers find the threshold that minimises your losses and calculates the minimum loss for each classifier. Show the optimal classifiers points on the ROC curves.
 
 ```{python}
-# Cost parameters
-cost_false_negative = 100
-cost_false_positive = 15 * 0.99
+# Feature scaling
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-# Function to calculate expected loss
-def calculate_expected_loss(y_true, y_prob, threshold, cost_fn, cost_fp):
-    y_pred = (y_prob >= threshold).astype(int)
-    conf_matrix = confusion_matrix(y_true, y_pred)
-    tn, fp, fn, tp = conf_matrix.ravel()
-    total_loss = fp * cost_fp + fn * cost_fn
-    return total_loss / len(y_true)
+# Train classifiers
+classifiers = {
+    'Logistic Regression': LogisticRegression(),
+    'Random Forest': RandomForestClassifier(),
+    'Support Vector Machine': SVC(probability=True)
+}
 
-# Find optimal threshold
-def find_optimal_threshold(y_true, y_prob, cost_fn, cost_fp):
-    thresholds = np.linspace(0, 1, 100)
-    losses = [calculate_expected_loss(y_true, y_prob, t, cost_fn, cost_fp) for t in thresholds]
-    min_loss = min(losses)
-    optimal_threshold = thresholds[losses.index(min_loss)]
-    return optimal_threshold, min_loss
+# Dictionary to store ROC curve data
+roc_data = {}
 
-# Calculate optimal thresholds and losses for each classifier
-optimal_threshold_qda, min_loss_qda = find_optimal_threshold(y_test, y_test_prob, cost_false_negative, cost_false_positive)
-optimal_threshold_gmm, min_loss_gmm = find_optimal_threshold(y_test, y_test_gmm_prob, cost_false_negative, cost_false_positive)
-optimal_threshold_gmm_best, min_loss_gmm_best = find_optimal_threshold(y_test, y_test_gmm_best_prob, cost_false_negative, cost_false_positive)
+# Train classifiers and generate ROC curves
+for clf_name, clf in classifiers.items():
+    clf.fit(X_train_scaled, y_train)
+    y_prob = clf.predict_proba(X_test_scaled)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+    roc_auc = auc(fpr, tpr)
+    roc_data[clf_name] = {'fpr': fpr, 'tpr': tpr, 'roc_auc': roc_auc, 'thresholds': thresholds}
 
-# Print optimal thresholds and minimum losses
-print("Optimal threshold (QDA):", optimal_threshold_qda)
-print("Minimum loss (QDA):", min_loss_qda)
-print("Optimal threshold (GMM):", optimal_threshold_gmm)
-print("Minimum loss (GMM):", min_loss_gmm)
-print("Optimal threshold (Best GMM):", optimal_threshold_gmm_best)
-print("Minimum loss (Best GMM):", min_loss_gmm_best)
+# Plot ROC curves
+plt.figure(figsize=(10, 6))
+for clf_name, data in roc_data.items():
+    plt.plot(data['fpr'], data['tpr'], label=f'{clf_name} (AUC = {data["roc_auc"]:.2f})')
 
-# Plot ROC curve with optimal points
-plt.figure(figsize=(8, 8))
-plt.plot(test_fpr, test_tpr, label=f'QDA (AUC = {test_roc_auc:.2f})')
-plt.plot(test_gmm_fpr, test_gmm_tpr, label=f'GMM (AUC = {test_gmm_roc_auc:.2f})')
-plt.plot(test_gmm_best_fpr, test_gmm_best_tpr, label=f'Best GMM (AUC = {test_gmm_best_roc_auc:.2f})')
-plt.scatter(optimal_threshold_qda, optimal_threshold_qda, color='red', label='Optimal QDA')
-plt.scatter(optimal_threshold_gmm, optimal_threshold_gmm, color='green', label='Optimal GMM')
-plt.scatter(optimal_threshold_gmm_best, optimal_threshold_gmm_best, color='blue', label='Optimal Best GMM')
+# Find optimal thresholds and mark on ROC curves
+optimal_thresholds = {}
+min_losses = {}
+for clf_name, data in roc_data.items():
+    optimal_threshold_idx = np.argmax(data['tpr'] - data['fpr'])
+    optimal_threshold = data['thresholds'][optimal_threshold_idx]
+    optimal_tpr = data['tpr'][optimal_threshold_idx]
+    optimal_fpr = data['fpr'][optimal_threshold_idx]
+    loss = (optimal_fpr * 100 + (1 - optimal_tpr) * 15)  # Calculating minimum loss
+    optimal_thresholds[clf_name] = optimal_threshold
+    min_losses[clf_name] = loss
+    plt.scatter(optimal_fpr, optimal_tpr, marker='o', color='black')
+    plt.text(optimal_fpr, optimal_tpr, f'Threshold: {optimal_threshold:.2f}', fontsize=9, verticalalignment='bottom')
+
+plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend()
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.grid(True)
 plt.show()
+
+# Print optimal thresholds and minimum losses
+for clf_name, threshold in optimal_thresholds.items():
+    print(f"Optimal threshold ({clf_name}): {threshold:.2f}")
+
+for clf_name, loss in min_losses.items():
+    print(f"Minimum loss ({clf_name}): {loss:.2f}")
+```
+
+```{python}
 
 ```
