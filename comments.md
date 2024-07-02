@@ -1,10 +1,13 @@
+Grade
+16/23 4.0
+
 22.05.2024 11:06:39
 Repository not in the required format. Should be a clone of my repository
 
 28.05.2024 18:48:03 
 Repozytorium dalej nie w takim formacie jak trzeba. Ale poprawię:) 
 
-# Banknotes NB
+# Banknotes NB 4/4
 
 ## Problem 1
 
@@ -26,7 +29,7 @@ Wygląda OK, ale brakuje porównania krzywych ROC dla rónej ilości cech.
 14.06.2024 13:09:34 OK
 Ale jak wyżej.
 
-# Banknotes GMDA 
+# Banknotes GMDA 8/15
 
 ## Problem 1
 
@@ -55,7 +58,7 @@ The cost does not take into acount the probability of the counterfeit banknote.
 You were supposed to compare the classfiers obtained in problems A-C.
 Anyway the answer is wrong. You are choosing the optimal threshold by maximazing TPR – FPR instead of minimizing loss. 
 
-# Banknote NN
+# Banknote NN 4/4
 
 4.06.2024 15:34:49
 You should at least try some more complicated network.
